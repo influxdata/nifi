@@ -15,7 +15,7 @@
 # limitations under the License.
 name: ci-workflow
 
-on: [push, pull_request]
+# on: [push, pull_request]
 
 env:
   DEFAULT_MAVEN_OPTS: >-

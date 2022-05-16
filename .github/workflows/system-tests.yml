@@ -15,18 +15,16 @@
 # limitations under the License.
 name: system-tests
 
-on:
-  # Run every day at 00:00
-  schedule:
-    - cron: "0 0 * * *"
-  push:
-    paths:
-      - '.github/workflows/system-tests.yml'
-      - 'nifi-system-tests/**'
-  pull_request:
-    paths:
-      - '.github/workflows/system-tests.yml'
-      - 'nifi-system-tests/**'
+# on:
+#   # Run every day at 00:00
+#   schedule:
+#     - cron: "0 0 * * *"
+#   push:
+#     paths:
+#       - 'nifi-system-tests/**'
+#   pull_request:
+#     paths:
+#       - 'nifi-system-tests/**'
 
 env:
   DEFAULT_MAVEN_OPTS: >-
