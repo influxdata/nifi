@@ -1,0 +1,22 @@
+version: 2.0
+
+jobs:
+  build:
+    docker:
+      - image: cimg/openjdk:8.0.322
+    steps:
+      - setup_remote_docker:
+          version: 20.10.14
+      - checkout
+      - run: mvn clean install -DskipTests
+      - run: mkdir ./nifi-docker/dockerhub/nifi/ && cp ./nifi-assembly/target/nifi-?.??.?-bin.zip ./nifi-docker/dockerhub/nifi/
+      - run: cd nifi-docker/dockerhub && docker build --build-arg NIFI_BINARY_PATH=nifi -t quay.io/influxdb/nifi:${CIRCLE_SHA1} .
+      - run: docker login -u=$QUAY_USER -p=$QUAY_PASS quay.io
+      - run: docker push quay.io/influxdb/nifi:${CIRCLE_SHA1}
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+    

@@ -15,10 +15,10 @@
 # limitations under the License.
 name: Manage stale PRs
 
-on:
-  # Run every day at midnight 00:00
-  schedule:
-    - cron: "0 0 * * *"
+# on:
+#   # Run every day at midnight 00:00
+#   schedule:
+#     - cron: "0 0 * * *"
 
 jobs:
   stale:
