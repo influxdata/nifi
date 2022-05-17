@@ -18,13 +18,14 @@
     <parent>
         <groupId>org.apache.nifi</groupId>
         <artifactId>nifi</artifactId>
-        <version>1.16.0</version>
+        <version>1.16.2-SNAPSHOT</version>
     </parent>
     <groupId>org.apache.nifi</groupId>
     <artifactId>nifi-commons</artifactId>
     <packaging>pom</packaging>
     <modules>
         <module>nifi-bootstrap-utils</module>
+        <module>nifi-build</module>
         <module>nifi-data-provenance-utils</module>
         <module>nifi-expression-language</module>
         <module>nifi-flowfile-packager</module>
@@ -44,6 +45,7 @@
         <module>nifi-property-protection-factory</module>
         <module>nifi-property-protection-gcp</module>
         <module>nifi-property-protection-hashicorp</module>
+        <module>nifi-property-protection-loader</module>
         <module>nifi-property-protection-shared</module>
         <module>nifi-record</module>
         <module>nifi-record-path</module>
@@ -64,5 +66,6 @@
         <module>nifi-vault-utils</module>
         <module>nifi-web-utils</module>
         <module>nifi-write-ahead-log</module>
+        <module>nifi-xml-processing</module>
     </modules>
 </project>

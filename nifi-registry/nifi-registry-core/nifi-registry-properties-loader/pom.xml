@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.apache.nifi.registry</groupId>
         <artifactId>nifi-registry-core</artifactId>
-        <version>1.16.0</version>
+        <version>1.16.2-SNAPSHOT</version>
     </parent>
     <artifactId>nifi-registry-properties-loader</artifactId>
     <packaging>jar</packaging>
@@ -49,6 +49,10 @@
         <dependency>
             <groupId>org.apache.nifi</groupId>
             <artifactId>nifi-property-protection-factory</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi</groupId>
+            <artifactId>nifi-property-protection-loader</artifactId>
         </dependency>
     </dependencies>
 

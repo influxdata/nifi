@@ -22,7 +22,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.nifi</groupId>
         <artifactId>nifi-hwx-schema-registry-bundle</artifactId>
-        <version>1.16.0</version>
+        <version>1.16.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>nifi-hwx-schema-registry-service</artifactId>
@@ -35,12 +35,12 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.nifi</groupId>
             <artifactId>nifi-utils</artifactId>
-            <version>1.16.0</version>
+            <version>1.16.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.nifi</groupId>
             <artifactId>nifi-security-kerberos</artifactId>
-            <version>1.16.0</version>
+            <version>1.16.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.nifi</groupId>
@@ -49,7 +49,7 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.nifi</groupId>
             <artifactId>nifi-avro-record-utils</artifactId>
-            <version>1.16.0</version>
+            <version>1.16.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.nifi</groupId>
@@ -75,18 +75,6 @@ limitations under the License.
             <artifactId>schema-registry-client</artifactId>
             <version>${hwx.registry.version}</version>
             <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>com.google.code.findbugs</groupId>
                     <artifactId>jsr305</artifactId>
@@ -119,23 +107,10 @@ limitations under the License.
             <artifactId>jersey-hk2</artifactId>
             <version>2.26</version>
         </dependency>
-
-        <!-- explicitly pulling in jackson and excluding above to not conflict with transitive test dependencies from nifi-mock -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.nifi</groupId>
             <artifactId>nifi-mock</artifactId>
-            <version>1.16.0</version>
+            <version>1.16.2-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -19,22 +19,11 @@
     <parent>
         <groupId>org.apache.nifi</groupId>
         <artifactId>nifi-gcp-bundle</artifactId>
-        <version>1.16.0</version>
+        <version>1.16.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>nifi-gcp-services-api</artifactId>
     <packaging>jar</packaging>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Override Guava version from google-auth-library-oauth2-http -->
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>31.0.1-jre</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -44,7 +33,6 @@
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.2.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.code.findbugs</groupId>
@@ -68,7 +56,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency> <!-- TODO: Remove this when the next version of google-auth-library-oauth2-http is released and brings this in-->
     </dependencies>
 

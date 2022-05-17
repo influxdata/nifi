@@ -250,7 +250,9 @@ public class StandardProcessGroupSynchronizer implements ProcessGroupSynchronize
 
         // Ensure that we create all Parameter Contexts before updating them. This is necessary in case the proposed incoming dataflow has
         // parameter contexts that inherit from one another and neither the inheriting nor inherited parameter context exists.
-        versionedParameterContexts.values().forEach(this::createParameterContextWithoutReferences);
+        if (versionedParameterContexts != null) {
+            versionedParameterContexts.values().forEach(this::createParameterContextWithoutReferences);
+        }
 
         updateParameterContext(group, proposed, versionedParameterContexts, context.getComponentIdGenerator());
         updateVariableRegistry(group, proposed);
@@ -502,8 +504,7 @@ public class StandardProcessGroupSynchronizer implements ProcessGroupSynchronize
         // therefore is not valid until all have been created.
         toEnable.forEach(service -> {
             if (service.getState() == ControllerServiceState.DISABLED) {
-                LOG.debug("Enabling {}", service);
-                context.getControllerServiceProvider().enableControllerServicesAsync(Collections.singleton(service));
+                context.getComponentScheduler().enableControllerServicesAsync(Collections.singleton(service));
             }
         });
     }
@@ -560,7 +561,11 @@ public class StandardProcessGroupSynchronizer implements ProcessGroupSynchronize
             // Find the destination of the connection. If the destination doesn't yet exist (because it's part of the proposed Process Group but not yet added),
             // we will set the destination to a temporary destination. Then, after adding components, we will update the destinations again.
             Connectable newDestination = getConnectable(group, proposedConnection.getDestination());
-            if (newDestination == null) {
+            if (
+                newDestination == null
+                ||
+                (newDestination.getConnectableType() == ConnectableType.OUTPUT_PORT && !newDestination.getProcessGroup().equals(connection.getProcessGroup()))
+            ) {
                 final Funnel temporaryDestination = getTemporaryFunnel(connection.getProcessGroup());
                 LOG.debug("Updated Connection {} to have a temporary destination of {}", connection, temporaryDestination);
                 newDestination = temporaryDestination;
@@ -1447,52 +1452,7 @@ public class StandardProcessGroupSynchronizer implements ProcessGroupSynchronize
         port.setPosition(new Position(proposed.getPosition().getX(), proposed.getPosition().getY()));
         port.setMaxConcurrentTasks(proposed.getConcurrentlySchedulableTaskCount());
 
-        final org.apache.nifi.flow.ScheduledState scheduledState = proposed.getScheduledState() == null ? org.apache.nifi.flow.ScheduledState.ENABLED : proposed.getScheduledState();
-
-        final ProcessGroup group = port.getProcessGroup();
-        if (port.getConnectableType() == ConnectableType.INPUT_PORT) {
-            switch (scheduledState) {
-                case DISABLED:
-                    group.disableInputPort(port);
-                    break;
-                case ENABLED:
-                    if (port.getScheduledState() == ScheduledState.DISABLED) {
-                        group.enableInputPort(port);
-                    } else if (port.getScheduledState() == ScheduledState.RUNNING) {
-                        group.stopInputPort(port);
-                    }
-                    break;
-                case RUNNING:
-                    if (port.getScheduledState() == ScheduledState.DISABLED) {
-                        group.enableInputPort(port);
-                    }
-                    if (port.getScheduledState() == ScheduledState.STOPPED) {
-                        context.getComponentScheduler().startComponent(port);
-                    }
-                    break;
-            }
-        } else if (port.getConnectableType() == ConnectableType.OUTPUT_PORT) {
-            switch (scheduledState) {
-                case DISABLED:
-                    group.disableOutputPort(port);
-                    break;
-                case ENABLED:
-                    if (port.getScheduledState() == ScheduledState.DISABLED) {
-                        group.enableOutputPort(port);
-                    } else if (port.getScheduledState() == ScheduledState.RUNNING) {
-                        group.stopOutputPort(port);
-                    }
-                    break;
-                case RUNNING:
-                    if (port.getScheduledState() == ScheduledState.DISABLED) {
-                        group.enableOutputPort(port);
-                    }
-                    if (port.getScheduledState() == ScheduledState.STOPPED) {
-                        context.getComponentScheduler().startComponent(port);
-                    }
-                    break;
-            }
-        }
+        context.getComponentScheduler().transitionComponentState(port, proposed.getScheduledState());
     }
 
     private Port addInputPort(final ProcessGroup destination, final VersionedPort proposed, final ComponentIdGenerator componentIdGenerator, final String temporaryName) {
@@ -1606,36 +1566,8 @@ public class StandardProcessGroupSynchronizer implements ProcessGroupSynchronize
                 processor.setBackoffMechanism(BackoffMechanism.valueOf(proposed.getBackoffMechanism()));
             }
 
-            final ScheduledState procState = processor.getScheduledState();
-            final ProcessGroup group = processor.getProcessGroup();
-            switch (proposed.getScheduledState()) {
-                case DISABLED:
-                    if (procState == ScheduledState.RUNNING) {
-                        LOG.debug("Stopping {}", processor);
-                        group.stopProcessor(processor);
-                    }
-
-                    LOG.debug("Disabling {}", processor);
-                    group.disableProcessor(processor);
-                    break;
-                case ENABLED:
-                    if (procState == ScheduledState.DISABLED) {
-                        LOG.debug("Enabling {}", processor);
-                        group.enableProcessor(processor);
-                    } else if (procState == ScheduledState.RUNNING) {
-                        LOG.debug("Stopping {}", processor);
-                        group.stopProcessor(processor);
-                    }
-                    break;
-                case RUNNING:
-                    if (procState == ScheduledState.DISABLED) {
-                        LOG.debug("Enabling {}", processor);
-                        group.enableProcessor(processor);
-                    }
-                    LOG.debug("Starting {}", processor);
-                    context.getComponentScheduler().startComponent(processor);
-                    break;
-            }
+            // Transition state to disabled/enabled/running
+            context.getComponentScheduler().transitionComponentState(processor, proposed.getScheduledState());
 
             if (!isEqual(processor.getBundleCoordinate(), proposed.getBundle())) {
                 final BundleCoordinate newBundleCoordinate = toCoordinate(proposed.getBundle());
@@ -1751,7 +1683,7 @@ public class StandardProcessGroupSynchronizer implements ProcessGroupSynchronize
             }
         } else {
             if (portState == ScheduledState.RUNNING) {
-                remoteGroupPort.getRemoteProcessGroup().stopTransmitting(remoteGroupPort);
+                context.getComponentScheduler().stopComponent(remoteGroupPort);
             }
         }
     }

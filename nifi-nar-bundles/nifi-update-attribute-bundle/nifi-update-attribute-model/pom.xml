@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.apache.nifi</groupId>
         <artifactId>nifi-update-attribute-bundle</artifactId>
-        <version>1.16.0</version>
+        <version>1.16.2-SNAPSHOT</version>
     </parent>
     <groupId>org.apache.nifi</groupId>
     <artifactId>nifi-update-attribute-model</artifactId>
@@ -26,8 +26,8 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-security-utils</artifactId>
-            <version>1.16.0</version>
+            <artifactId>nifi-xml-processing</artifactId>
+            <version>1.16.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <profiles>

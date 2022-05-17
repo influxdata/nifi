@@ -19,47 +19,25 @@
     <parent>
         <groupId>org.apache.nifi</groupId>
         <artifactId>nifi-nar-bundles</artifactId>
-        <version>1.16.0</version>
+        <version>1.16.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>nifi-gcp-bundle</artifactId>
-    <version>1.16.0</version>
+    <version>1.16.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <google.cloud.sdk.version>0.162.0</google.cloud.sdk.version>
+        <google.libraries.version>25.2.0</google.libraries.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-            	<!-- https://github.com/googleapis/java-cloud-bom -->
                 <groupId>com.google.cloud</groupId>
-                <artifactId>google-cloud-bom</artifactId>
-                <version>${google.cloud.sdk.version}</version>
+                <artifactId>libraries-bom</artifactId>
+                <version>${google.libraries.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <!-- Override Jackson versions -->
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>31.0.1-jre</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

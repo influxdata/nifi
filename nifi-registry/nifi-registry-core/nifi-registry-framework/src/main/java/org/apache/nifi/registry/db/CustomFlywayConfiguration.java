@@ -23,6 +23,7 @@ import org.flywaydb.core.internal.database.DatabaseTypeRegister;
 import org.flywaydb.core.internal.database.postgresql.PostgreSQLDatabaseType;
 import org.flywaydb.core.internal.jdbc.JdbcUtils;
 import org.flywaydb.database.mysql.MySQLDatabaseType;
+import org.flywaydb.database.mysql.mariadb.MariaDBDatabaseType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.flyway.FlywayConfigurationCustomizer;
@@ -58,10 +59,10 @@ public class CustomFlywayConfiguration implements FlywayConfigurationCustomizer 
         final DatabaseType databaseType = getDatabaseType(configuration.getDataSource());
         LOGGER.info("Determined database type is {}", databaseType.getName());
 
-        if (databaseType.equals(new MySQLDatabaseType())) {
+        if (databaseType instanceof MySQLDatabaseType || databaseType instanceof MariaDBDatabaseType) {
             LOGGER.info("Setting migration locations to {}", Arrays.asList(LOCATIONS_MYSQL));
             configuration.locations(LOCATIONS_MYSQL);
-        } else if (databaseType.equals(new PostgreSQLDatabaseType())) {
+        } else if (databaseType instanceof PostgreSQLDatabaseType) {
             LOGGER.info("Setting migration locations to {}", Arrays.asList(LOCATIONS_POSTGRES));
             configuration.locations(LOCATIONS_POSTGRES);
         } else {
