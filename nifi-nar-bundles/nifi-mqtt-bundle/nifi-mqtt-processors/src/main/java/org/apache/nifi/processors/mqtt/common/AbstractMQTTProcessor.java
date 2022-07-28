@@ -286,6 +286,33 @@ public abstract class AbstractMQTTProcessor extends AbstractSessionFactoryProces
             results.add(new ValidationResult.Builder().subject(PROP_BROKER_URI.getName()).valid(false).explanation("it is not valid URI syntax.").build());
         }
 
+        // attempt to validate broker connection
+        try {
+            setupConnectionOpts(context)
+
+            if (mqttClient == null) {
+                logger.debug("Creating client");
+                mqttClient = createMqttClient(broker, clientID, persistence);
+                mqttClient.setCallback(this);
+            }
+
+            // if we're already connected there is no need to validate the connection.
+            if (!mqttClient.isConnected()) {
+                logger.debug("Connecting client");
+                mqttClient.connect(connOpts);
+                // if we make it this far, the connection was successful.
+                // we close the connection because it was not open before the validation.
+                mqttClient.close();
+                mqttClient = null;
+            }
+        } catch (MqttException e) {
+            results.add(new ValidationResult.Builder()
+                .valid(false)
+                .subject("MQTT Broker Connection")
+                .explanation("Unable to connect to the MQTT broker. Please check the provided URI.")
+                .build());
+        }
+
         return results;
     }
 
@@ -315,7 +342,7 @@ public abstract class AbstractMQTTProcessor extends AbstractSessionFactoryProces
         return  properties;
     }
 
-    protected void onScheduled(final ProcessContext context){
+    private void setupConnectionOpts(final PropertyContext context) {
         broker = context.getProperty(PROP_BROKER_URI).evaluateAttributeExpressions().getValue();
         brokerUri = broker.endsWith("/") ? broker : broker + "/";
         clientID = context.getProperty(PROP_CLIENTID).evaluateAttributeExpressions().getValue();
@@ -350,6 +377,10 @@ public abstract class AbstractMQTTProcessor extends AbstractSessionFactoryProces
             connOpts.setUserName(usernameProp.evaluateAttributeExpressions().getValue());
             connOpts.setPassword(context.getProperty(PROP_PASSWORD).getValue().toCharArray());
         }
+    }
+
+    protected void onScheduled(final ProcessContext context){
+        setupConnectionOpts(context)
     }
 
     protected void onStopped() {

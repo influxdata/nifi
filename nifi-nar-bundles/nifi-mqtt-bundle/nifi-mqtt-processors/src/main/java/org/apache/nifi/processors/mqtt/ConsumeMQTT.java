@@ -308,25 +308,6 @@ public class ConsumeMQTT extends AbstractMQTTProcessor implements MqttCallback {
                     .explanation("You cannot use both a demarcator and a Reader/Writer").build());
         }
 
-        try {
-            if (mqttClient == null) {
-                logger.debug("Creating client");
-                mqttClient = createMqttClient(broker, clientID, persistence);
-                mqttClient.setCallback(this);
-            }
-
-            if (!mqttClient.isConnected()) {
-                logger.debug("Connecting client");
-                mqttClient.connect(connOpts);
-            }
-        } catch (MqttException e) {
-            results.add(new ValidationResult.Builder()
-                .valid(false)
-                .subject("MQTT Broker Connection")
-                .explanation("Unable to connect to the MQTT broker. Please check the provided URI.")
-                .build());
-        }
-
         return results;
     }
 
