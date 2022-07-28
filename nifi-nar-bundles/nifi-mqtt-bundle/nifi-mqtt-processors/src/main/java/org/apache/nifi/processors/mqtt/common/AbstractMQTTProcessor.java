@@ -29,6 +29,7 @@ import org.apache.nifi.processor.AbstractSessionFactoryProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessSessionFactory;
+import org.apache.nifi.context.PropertyContext;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.ssl.SSLContextService;
@@ -288,7 +289,7 @@ public abstract class AbstractMQTTProcessor extends AbstractSessionFactoryProces
 
         // attempt to validate broker connection
         try {
-            setupConnectionOpts(context);
+            setupConnectionOpts(validationContext);
 
             if (mqttClient == null) {
                 logger.debug("Creating client");
