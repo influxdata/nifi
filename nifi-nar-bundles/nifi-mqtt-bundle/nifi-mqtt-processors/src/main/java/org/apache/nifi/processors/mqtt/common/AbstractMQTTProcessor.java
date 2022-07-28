@@ -277,8 +277,9 @@ public abstract class AbstractMQTTProcessor extends AbstractSessionFactoryProces
             }
         }
 
+        String broker = validationContext.getProperty(PROP_BROKER_URI).evaluateAttributeExpressions().getValue();
         try {
-            URI brokerURI = new URI(validationContext.getProperty(PROP_BROKER_URI).evaluateAttributeExpressions().getValue());
+            URI brokerURI = new URI(broker);
             if (brokerURI.getScheme().equalsIgnoreCase("ssl") && !validationContext.getProperty(PROP_SSL_CONTEXT_SERVICE).isSet()) {
                 results.add(new ValidationResult.Builder().subject(PROP_SSL_CONTEXT_SERVICE.getName() + " or " + PROP_BROKER_URI.getName()).valid(false).explanation("if the 'ssl' scheme is used in " +
                         "the broker URI, the SSL Context Service must be set.").build());
@@ -287,25 +288,28 @@ public abstract class AbstractMQTTProcessor extends AbstractSessionFactoryProces
             results.add(new ValidationResult.Builder().subject(PROP_BROKER_URI.getName()).valid(false).explanation("it is not valid URI syntax.").build());
         }
 
-        // attempt to validate broker connection
+        if (broker == null) {
+            return results;
+        }
+
+        String clientID = validationContext.getProperty(PROP_CLIENTID).evaluateAttributeExpressions().getValue();
+        if (clientID == null) {
+            clientID = UUID.randomUUID().toString();
+        }
+
         try {
-            setupConnectionOpts(validationContext);
-
-            if (mqttClient == null) {
-                logger.debug("Creating client");
-                mqttClient = createMqttClient(broker, clientID, persistence);
-                mqttClient.setCallback(this);
-            }
-
-            // if we're already connected there is no need to validate the connection.
-            if (!mqttClient.isConnected()) {
-                logger.debug("Connecting client");
-                mqttClient.connect(connOpts);
-                // if we make it this far, the connection was successful.
-                // we close the connection because it was not open before the validation.
-                mqttClient.close();
-                mqttClient = null;
-            }
+            // attempt to validate broker connection
+            MqttConnectOptions connOpts = setupConnectionOpts(validationContext);
+            logger.debug("Creating validation client");
+            IMqttClient validationClient = createMqttClient(broker, clientID, persistence);
+            logger.debug("Connecting validation client");
+            validationClient.connect(connOpts);
+            // if we make it this far, the connection was successful.
+            // we close the connection because it was not open before the validation.
+            logger.info("Disconnecting validation client");
+            validationClient.disconnect(DISCONNECT_TIMEOUT);
+            logger.info("Closing validation client");
+            validationClient.close();
         } catch (MqttException e) {
             results.add(new ValidationResult.Builder()
                 .valid(false)
@@ -343,16 +347,8 @@ public abstract class AbstractMQTTProcessor extends AbstractSessionFactoryProces
         return  properties;
     }
 
-    private void setupConnectionOpts(final PropertyContext context) {
-        broker = context.getProperty(PROP_BROKER_URI).evaluateAttributeExpressions().getValue();
-        brokerUri = broker.endsWith("/") ? broker : broker + "/";
-        clientID = context.getProperty(PROP_CLIENTID).evaluateAttributeExpressions().getValue();
-
-        if (clientID == null) {
-            clientID = UUID.randomUUID().toString();
-        }
-
-        connOpts = new MqttConnectOptions();
+    private static MqttConnectOptions setupConnectionOpts(final PropertyContext context) {
+        MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setCleanSession(context.getProperty(PROP_CLEAN_SESSION).asBoolean());
         connOpts.setKeepAliveInterval(context.getProperty(PROP_KEEP_ALIVE_INTERVAL).asInteger());
         connOpts.setMqttVersion(context.getProperty(PROP_MQTT_VERSION).asInteger());
@@ -378,10 +374,18 @@ public abstract class AbstractMQTTProcessor extends AbstractSessionFactoryProces
             connOpts.setUserName(usernameProp.evaluateAttributeExpressions().getValue());
             connOpts.setPassword(context.getProperty(PROP_PASSWORD).getValue().toCharArray());
         }
+        return connOpts;
     }
 
     protected void onScheduled(final ProcessContext context){
-        setupConnectionOpts(context);
+        broker = context.getProperty(PROP_BROKER_URI).evaluateAttributeExpressions().getValue();
+        brokerUri = broker.endsWith("/") ? broker : broker + "/";
+        clientID = context.getProperty(PROP_CLIENTID).evaluateAttributeExpressions().getValue();
+
+        if (clientID == null) {
+            clientID = UUID.randomUUID().toString();
+        }
+        connOpts = setupConnectionOpts(context);
     }
 
     protected void onStopped() {
