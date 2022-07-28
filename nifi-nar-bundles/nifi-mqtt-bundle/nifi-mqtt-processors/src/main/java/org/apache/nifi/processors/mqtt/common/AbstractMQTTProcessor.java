@@ -288,7 +288,7 @@ public abstract class AbstractMQTTProcessor extends AbstractSessionFactoryProces
 
         // attempt to validate broker connection
         try {
-            setupConnectionOpts(context)
+            setupConnectionOpts(context);
 
             if (mqttClient == null) {
                 logger.debug("Creating client");
@@ -380,7 +380,7 @@ public abstract class AbstractMQTTProcessor extends AbstractSessionFactoryProces
     }
 
     protected void onScheduled(final ProcessContext context){
-        setupConnectionOpts(context)
+        setupConnectionOpts(context);
     }
 
     protected void onStopped() {
