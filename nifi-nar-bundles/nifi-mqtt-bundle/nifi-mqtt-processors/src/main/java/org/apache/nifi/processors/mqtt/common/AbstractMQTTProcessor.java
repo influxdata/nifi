@@ -297,25 +297,27 @@ public abstract class AbstractMQTTProcessor extends AbstractSessionFactoryProces
             clientID = UUID.randomUUID().toString();
         }
 
-        try {
-            // attempt to validate broker connection
-            MqttConnectOptions connOpts = setupConnectionOpts(validationContext);
-            logger.debug("Creating validation client");
-            IMqttClient validationClient = createMqttClient(broker, clientID, persistence);
-            logger.debug("Connecting validation client");
-            validationClient.connect(connOpts);
-            // if we make it this far, the connection was successful.
-            // we close the connection because it was not open before the validation.
-            logger.info("Disconnecting validation client");
-            validationClient.disconnect(DISCONNECT_TIMEOUT);
-            logger.info("Closing validation client");
-            validationClient.close();
-        } catch (MqttException e) {
-            results.add(new ValidationResult.Builder()
-                .valid(false)
-                .subject("MQTT Broker Connection")
-                .explanation("Unable to connect to the MQTT broker. Please check the provided URI.")
-                .build());
+        synchronized (this) {
+            try {
+                // attempt to validate broker connection
+                MqttConnectOptions connOpts = setupConnectionOpts(validationContext);
+                logger.debug("Creating validation client");
+                IMqttClient validationClient = createMqttClient(broker, clientID, persistence);
+                logger.debug("Connecting validation client");
+                validationClient.connect(connOpts);
+                // if we make it this far, the connection was successful.
+                // we close the connection because it was not open before the validation.
+                logger.info("Disconnecting validation client");
+                validationClient.disconnect(DISCONNECT_TIMEOUT);
+                logger.info("Closing validation client");
+                validationClient.close();
+            } catch (MqttException e) {
+                results.add(new ValidationResult.Builder()
+                    .valid(false)
+                    .subject("MQTT Broker Connection")
+                    .explanation("Unable to connect to the MQTT broker. Please check the provided URI.")
+                    .build());
+            }
         }
 
         return results;
