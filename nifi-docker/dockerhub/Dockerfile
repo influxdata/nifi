@@ -15,9 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-ARG IMAGE_NAME=openjdk
-ARG IMAGE_TAG=8-jre
-FROM ${IMAGE_NAME}:${IMAGE_TAG}
+# ARG IMAGE_NAME=openjdk
+# ARG IMAGE_TAG=8-jre
+# FROM ${IMAGE_NAME}:${IMAGE_TAG}
+FROM eclipse-temurin:8
 ARG MAINTAINER="Apache NiFi <dev@nifi.apache.org>"
 LABEL maintainer="${MAINTAINER}"
 LABEL site="https://nifi.apache.org"
@@ -47,7 +48,7 @@ RUN groupadd -g ${GID} nifi || groupmod -n nifi `getent group ${GID} | cut -d: -
     && mkdir -p ${NIFI_BASE_DIR} \
     && chown -R nifi:nifi ${NIFI_BASE_DIR} \
     && apt-get update \
-    && apt-get install -y jq xmlstarlet procps
+    && apt-get install -y jq xmlstarlet procps unzip
 
 USER nifi
 
